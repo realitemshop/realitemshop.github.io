@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>유명템 영상 속 제품</title>
+<meta name="description" content="연예인이 영상에서 직접 쓴 제품을 모았어요.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;--bg:light-dark(#fffdf6,#15140f);--ink:light-dark(#1b1a17,#f4f1e6);--sub:light-dark(#6b675c,#b9b3a3);--line:light-dark(#ece6d3,#2e2c24);--card:light-dark(#ffffff,#1f1e18);--yel:#FFE27A;--yelink:#3a2e00;--btn:light-dark(#1b1a17,#FFE27A);--btnink:light-dark(#fff,#1b1a17)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans KR",system-ui,sans-serif;overflow-x:clip;word-break:keep-all}
+.wrap{max-width:560px;margin:0 auto;padding:20px 16px 48px}
+.notice{font-size:13px;line-height:1.5;color:var(--sub);border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin:0 0 18px}
+.hero{background:var(--yel);color:var(--yelink);border-radius:16px;padding:22px 20px 20px}
+.hero .who{font-size:13px;font-weight:500;margin:0 0 6px}
+.hero h1{font-family:"Black Han Sans","Noto Sans KR",sans-serif;font-weight:400;font-size:clamp(32px,9vw,42px);line-height:1.05;margin:0 0 8px;text-wrap:balance}
+.hero p{margin:0;font-size:15px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:16px 0 6px;scrollbar-width:none}
+.chips button{flex:none;font:inherit;font-size:14px;font-weight:500;min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.chips button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chips button:focus-visible,.go:focus-visible{outline:3px solid #f2b705;outline-offset:2px}
+.count{font-size:13px;color:var(--sub);margin:6px 2px 10px}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{display:grid;grid-template-columns:48px minmax(0,1fr);gap:12px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.av{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:"Black Han Sans",sans-serif;font-size:17px}
+.meta{font-size:13px;color:var(--sub);margin:0 0 2px}
+.item h2{font-size:17px;font-weight:700;line-height:1.35;margin:0 0 4px}
+.kind{display:inline-block;font-size:12px;font-weight:500;border-radius:6px;padding:2px 7px;margin:0 0 8px}
+.kind.same{background:light-dark(#eef7e8,#22311a);color:light-dark(#2f5b12,#b9e095)}
+.kind.like{background:light-dark(#fff3d6,#3a2e0c);color:light-dark(#7a5200,#ffd77a)}
+.go{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border-radius:10px;background:var(--btn);color:var(--btnink);font-weight:700;font-size:15px;text-decoration:none;margin-top:2px}
+.empty{color:var(--sub);text-align:center;padding:28px 0}
+.foot{font-size:13px;color:var(--sub);margin-top:22px;line-height:1.6}
+@media(prefers-reduced-motion:no-preference){.item{animation:up .35s ease both}@keyframes up{from{opacity:0;transform:translateY(6px)}}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="notice">이 페이지의 링크는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+  <section class="hero">
+    <p class="who">유명템 · 연예인이 진짜 쓰는 템</p>
+    <h1>영상 속 제품 모아보기</h1>
+    <p>영상에 나온 제품을 최근 영상부터 모았어요.</p>
+  </section>
+  <div class="chips" id="chips" role="group" aria-label="연예인별로 보기"></div>
+  <p class="count" id="count"></p>
+  <div class="list" id="list"><p class="empty">불러오는 중…</p></div>
+  <p class="foot">'영상 속 제품'은 영상에 나온 바로 그 제품이고, '같은 종류'는 영상 속 제품을 쿠팡에서 찾지 못해 모양·쓰임이 같은 제품을 연결한 거예요. 가격과 재고는 쿠팡에서 확인해 주세요.</p>
+</main>
+<script>
+{
+/* 제품 목록은 같은 폴더의 items.json. at: 공개 시각(한국 시간, "YYYY-MM-DD HH:MM"). 비어 있으면 바로 보이고, 시각이 있으면 그때부터 보인다. same: true=영상 속 그 제품, false=같은 종류 */
+const TONE = {"카즈하":["#e9e3ff","#3c2f86"],"최화정":["#ffe1e8","#7a1f3d"],"임윤아":["#dff1ff","#0c4a7a"],"고소영":["#dff5ea","#0b5a3a"],"윤혜진":["#fff0d6","#6d4300"],"채정안":["#f1ece0","#4a3f28"]};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const kst = s => s ? new Date(s.replace(" ", "T") + ":00+09:00").getTime() : 0;
+const md = t => { if (!t) return ""; const d = new Date(t + 9 * 3600e3); return (d.getUTCMonth() + 1) + "/" + d.getUTCDate() + " · "; };
+const chips = document.getElementById("chips"), list = document.getElementById("list"), count = document.getElementById("count");
+let live = [], celebs = [], pick = "";
+try { pick = sessionStorage.getItem("ymt-pick") || ""; } catch (e) {}
+function draw() {
+  chips.innerHTML = ["", ...celebs].map(c => `<button type="button" data-c="${esc(c)}" aria-pressed="${c === pick}">${c ? esc(c) : "전체"}</button>`).join("");
+  const rows = live.filter(x => !pick || x.celeb === pick);
+  count.textContent = rows.length ? `제품 ${rows.length}개` : "";
+  list.innerHTML = rows.length ? rows.map(x => {
+    const [bg, fg] = TONE[x.celeb] || ["#eee", "#333"];
+    return `<article class="item"><div class="av" style="background:${bg};color:${fg}" aria-hidden="true">${esc(x.celeb.slice(0, 1))}</div>
+      <div><p class="meta">${md(x.t)}${esc(x.celeb)} · ${esc(x.label)}</p><h2>${esc(x.title)}</h2>
+      <span class="kind ${x.same ? "same" : "like"}">${x.same ? "영상 속 제품" : "같은 종류"}</span>
+      <a class="go" href="${esc(x.url)}" target="_blank" rel="noopener sponsored">쿠팡에서 보기 →</a></div></article>`;
+  }).join("") : `<p class="empty">곧 첫 제품이 올라와요.</p>`;
+}
+chips.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  pick = b.dataset.c; try { sessionStorage.setItem("ymt-pick", pick); } catch (e) {}
+  draw();
+});
+fetch("items.json?v=" + Date.now()).then(r => r.json()).then(items => {
+  const now = Date.now();
+  live = items.map((x, i) => ({...x, t: kst(x.at), i})).filter(x => x.t <= now).sort((a, b) => (b.t - a.t) || (a.i - b.i));
+  celebs = [...new Set(live.map(x => x.celeb))];
+  if (pick && !celebs.includes(pick)) pick = "";
+  draw();
+}).catch(() => { list.innerHTML = `<p class="empty">목록을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</p>`; });
+}
+</script>
+</body>
+</html>
