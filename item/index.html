@@ -53,7 +53,8 @@ a{color:inherit}
 .shot .kind{position:absolute;left:8px;top:8px;font-size:11px;font-weight:700;padding:3px 7px;border-radius:6px;background:#F1F2F5;color:#4A505C}
 .shot .new{position:absolute;right:8px;top:8px;font-size:11px;font-weight:800;padding:3px 7px;border-radius:6px;background:var(--mark);color:var(--ink)}
 .body{display:flex;flex-direction:column;gap:6px;padding:10px 11px 11px;flex:1}
-.celeb{font-size:12px;font-weight:700;color:var(--mute)}
+.celeb{display:flex;align-items:baseline;justify-content:space-between;gap:6px;font-size:15px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+.celeb small{font-size:11.5px;font-weight:600;color:var(--mute);letter-spacing:0;white-space:nowrap}
 /* 영상 제목을 쇼츠 제목 상자처럼 형광펜으로 */
 .video{font-size:14px;font-weight:700;line-height:1.38;letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .video mark{background:linear-gradient(transparent 52%,var(--mark) 52%);color:inherit;padding:0 1px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
@@ -93,11 +94,12 @@ a{color:inherit}
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const kst = s => s ? new Date(s.replace(" ", "T") + ":00+09:00").getTime() : 0;
+const md = t => { const d = new Date(t + 9 * 3600e3); return (d.getUTCMonth() + 1) + "/" + d.getUTCDate(); };
 let all = [], pick = "", q = "";
 try { pick = sessionStorage.getItem("ymt-pick") || ""; } catch (e) {}
 
 function drawWho() {
-  const n = {}; all.forEach(x => n[x.celeb] = (n[x.celeb] || 0) + 1);
+  const n = {}; all.forEach(x => n[x.celeb] = (n[x.celeb] || 0) + 1); /* all은 최신순이라 연예인 버튼도 최근 영상 순 */
   const names = Object.keys(n);
   if (pick && !names.includes(pick)) pick = "";
   $("who").innerHTML = [["", all.length], ...names.map(c => [c, n[c]])].map(([c, k]) =>
@@ -115,7 +117,7 @@ function drawGrid() {
       <div class="shot">${x.img ? `<img src="${esc(x.img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}
         ${x.same ? "" : `<span class="kind">같은 종류</span>`}${x.isNew ? `<span class="new">NEW</span>` : ""}</div>
       <div class="body">
-        <div class="celeb">${esc(x.celeb)}</div>
+        <div class="celeb">${esc(x.celeb)}${x.t ? `<small>${md(x.t)} 영상</small>` : ""}</div>
         <div class="video"><mark>${esc(x.video)}</mark></div>
         <div class="name">${esc(x.title)}</div>
         ${x.price ? `<div class="price">${esc(x.price)}</div>` : ""}
@@ -135,8 +137,8 @@ $("clear").addEventListener("click", () => { q = ""; $("q").value = ""; $("sbox"
 
 fetch("items.json?v=" + Date.now()).then(r => r.json()).then(items => {
   const now = Date.now();
-  all = items.map((x, i) => ({...x, t: kst(x.at), i}))
-    .filter(x => x.t <= now)
+  all = items.map((x, i) => ({...x, vis: kst(x.at), t: kst(x.at) || kst(x.date ? x.date + " 00:00" : ""), i}))
+    .filter(x => x.vis <= now)
     .map(x => ({...x, isNew: x.t && now - x.t < 3 * 864e5}))
     .sort((a, b) => (b.t - a.t) || (a.i - b.i));
   drawWho(); drawGrid();
